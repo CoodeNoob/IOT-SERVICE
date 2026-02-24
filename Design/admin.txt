@@ -1,0 +1,7 @@
+ADMIN
+++++++++
+- course create
+- student enroll 
+- teacher asign
+- register student
+- register teacher

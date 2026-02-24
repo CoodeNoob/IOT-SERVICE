@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "NEXUS",
+    "password": "asd123",
+    "database": "IOT",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "test": {
+    "username": "NEXUS",
+    "password": "asd123",
+    "database": "IOT",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  },
+  "production": {
+    "username": "NEXUS",
+    "password": "asd123",
+    "database": "IOT",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}
