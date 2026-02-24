@@ -6,7 +6,6 @@ async function RegisterStudent(req, res, next) {
 
     try {
         const { name, email, password } = req.body;
-        console.log(name);
 
         if (name.trim() == "") {
             Response.error(res, "Name is requied", errorCode = 403);
