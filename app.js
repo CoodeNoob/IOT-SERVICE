@@ -9,7 +9,6 @@ const StudentRoutes = require('./src/routes/student.route');
 const courseRoutes = require('./src/routes/course.route');
 
 
-
 //CORS OPTIONS
 const allowOrigin = [
     'http://localhost:3000'

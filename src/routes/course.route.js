@@ -1,8 +1,7 @@
 const express = require('express');
 const coureseRouter = express.Router();
 const courseController = require('../controllers/course.controller');
-
-const { authorizeRole } = require('../middleware/auth.middleware');
+const { authValidate, authorizeRole } = require('../middleware/auth.middleware');
 
 coureseRouter.get('/', (req, res) => {
     res.json({
@@ -11,8 +10,8 @@ coureseRouter.get('/', (req, res) => {
 })
 
 
-coureseRouter.post('/new', courseController.addNewCourse);
-coureseRouter.post('/enroll', courseController.enrollCourse);
-
+// STRICT | NEED TO BE ADMIN
+coureseRouter.post('/new', authValidate, authorizeRole('admin'), courseController.addNewCourse);
+coureseRouter.post('/enroll', authValidate, authorizeRole('admin'), courseController.enrollCourse);
 
 module.exports = coureseRouter;
