@@ -19,7 +19,6 @@ function authValidate(req, res, next) {
         Response.error(res, message = error.message, errorCode = 405);
     }
 }
-
 function authorizeRole(...allowedRoles) {
     return (req, res, next) => {
 
