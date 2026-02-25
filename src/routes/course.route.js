@@ -12,5 +12,7 @@ coureseRouter.get('/', (req, res) => {
 
 
 coureseRouter.post('/new', courseController.addNewCourse);
+coureseRouter.post('/enroll', courseController.enrollCourse);
+
 
 module.exports = coureseRouter;

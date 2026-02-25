@@ -1,5 +1,6 @@
-const stuentService = require('../services/course.service');
+const courseService = require('../services/course.service');
 const Response = require('../utils/ApiResponses');
+const studentService = require('../services/student.service');
 
 async function addNewCourse(req, res) {
     // courseName | courseCode
@@ -10,8 +11,30 @@ async function addNewCourse(req, res) {
             courseName: courseName,
             courseCode: generateCourseCode()
         }
-        stuentService.addNewCourse(courseData);
+        await courseService.addNewCourse(courseData);
         Response.success(res, message = "Course Created Successfully!", 200);
+    }
+    catch (error) {
+        Response.error(res, message = error.message, errorCode = 403);
+    }
+}
+
+async function enrollCourse(req, res) {
+    try {
+        const { studentId, courseId } = req.body;
+
+        const student = studentService.FindStudentById(studentId);
+        const course = courseService.findCourseById(courseId);
+
+        if (!student) Response.error(res, message = "Student is not available !", errorCode = 403);
+        if (!course) Response.error(res, message = "Course is not available !", errorCode = 403);
+
+        await courseService.enrollStudent({
+            course_id: courseId,
+            student_id: studentId
+        })
+
+        Response.success(res, message = 'Course enrolled Successfully!', 200);
     }
     catch (error) {
         Response.error(res, message = error.message, errorCode = 403);
@@ -25,6 +48,10 @@ function generateCourseCode() {
     return `CRS-${timestamp}${random}`;
 }
 
+
+
+
 module.exports = {
-    addNewCourse
+    addNewCourse,
+    enrollCourse
 }
