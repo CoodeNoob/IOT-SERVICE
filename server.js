@@ -11,13 +11,11 @@ sequelize.authenticate()
         console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
         console.log(`Database : ${process.env.DB_NAME} : connected successfully`);
         console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-
-
         return sequelize.sync();
     })
     .then(() => {
         app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
+            console.log(`Server is running on http://localhost:${PORT}`);
         });
     })
     .catch(err => {

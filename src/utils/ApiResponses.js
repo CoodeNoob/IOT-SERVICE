@@ -17,13 +17,9 @@ class ApiResponse {
             timestamp: new Date().toISOString()
         };
 
-        if (errorCode) {
-            response.errorCode = errorCode;
-        }
+        if (errorCode) response.errorCode = errorCode;
 
-        if (errors) {
-            response.errors = errors;
-        }
+        if (errors) response.errors = errors;
 
         return res.status(statusCode).json(response);
     }
