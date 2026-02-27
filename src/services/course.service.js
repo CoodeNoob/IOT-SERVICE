@@ -1,7 +1,6 @@
 const Course = require('../models/course.model');
 const CourseEnroll = require('../models/studentcourse.model');
 
-
 async function addNewCourse(courseData) {
     return Course.create(courseData);
 }

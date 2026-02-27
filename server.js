@@ -8,7 +8,10 @@ const PORT = process.env.PORT || 5000;
 
 sequelize.authenticate()
     .then(() => {
-        console.log('Database connected successfully');
+        console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        console.log(`Database : ${process.env.DB_NAME} : connected successfully`);
+        console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
 
         return sequelize.sync();
     })

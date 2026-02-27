@@ -7,6 +7,7 @@ const cors = require('cors');
 const authRoutes = require('./src/routes/auth.route');
 const StudentRoutes = require('./src/routes/student.route');
 const courseRoutes = require('./src/routes/course.route');
+const teacherRoutes = require('./src/routes/teacher.route');
 
 
 //CORS OPTIONS
@@ -63,5 +64,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRoutes);
 app.use('/api/student', StudentRoutes);
 app.use('/api/course', courseRoutes);
+app.use('/api/teacher', teacherRoutes);
 
 module.exports = app;   

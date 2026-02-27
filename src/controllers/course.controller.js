@@ -41,6 +41,11 @@ async function enrollCourse(req, res) {
     }
 }
 
+
+async function assignCourse(req, res) {
+
+}
+
 // helper function
 function generateCourseCode() {
     const timestamp = Date.now().toString().slice(-4);
@@ -53,5 +58,6 @@ function generateCourseCode() {
 
 module.exports = {
     addNewCourse,
-    enrollCourse
+    enrollCourse,
+    assignCourse
 }
