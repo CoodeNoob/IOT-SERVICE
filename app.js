@@ -60,7 +60,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 
-// APP ROUTES
+// API ROUTES
 app.use('/api/auth', authRoutes);
 app.use('/api/student', StudentRoutes);
 app.use('/api/course', courseRoutes);

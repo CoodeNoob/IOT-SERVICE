@@ -1,60 +1,100 @@
 const Response = require('../utils/ApiResponses');
 const bcrypt = require('bcrypt');
 const studentService = require('../services/student.service');
+const teacherService = require('../services/teacher.service');
 const jwtService = require('../utils/jwt');
 
 async function StudentLogin(req, res, next) {
-
     try {
-        const { email, password } = req.body;
+        const { email, password } = extractEmailPassword(req.body);
 
-        if (!email) {
-            Response.error(res, message = "Email is required !", errorCode = 403);
-        }
-        else if (!password) {
-            Response.error(res, message = "Password is required !", errorCode = 403);
-        }
-
-        // raw true
         const student = await studentService.FindByEmail(email);
 
-        if (!student) Response.error(res, message = "Invalid Email or Password", errorCode = 401);
+        if (!student) {
+            return Response.error(res, "Invalid Email or Password", 401);
+        }
 
-        const isMatch = await bcrypt.compare(password, student.password);
+        const isMatch = await passwordCompare(password, student.password);
 
-        if (!isMatch) Response.error(res, message = "Invalid Email or Password", errorCode = 401);
+        if (!isMatch) {
+            return Response.error(res, "Invalid Email or Password", 401);
+        }
 
-        // TOKEN
         const token = jwtService.generateAccessToken({
             id: student.id,
             role: student.role
         });
 
-        console.log(student);
-
         const responseData = {
-            token: token,
+            token,
             userData: {
                 id: student.id,
                 name: student.name,
                 email: student.email,
                 photo_url: student.photo_url
             }
-        }
+        };
 
-        //Successful Response
-        Response.success(res, data = responseData, message = "Login Successful", 200);
+        return Response.success(res, responseData, "Login Successful", 200);
+
+    } catch (error) {
+        return Response.error(res, "Internal Server Error", 500);
+    }
+}
+
+async function TeacherLogin(req, res, next) {
+    try {
+        const { email, password } = extractEmailPassword(req.body);
+
+        const teacher = teacherService.findByEmail(email);
+
+        if (!teacher) return Response.error(res, "Invalid Email or Password", 401);
+
+        const isMatch = await passwordCompare(password, teacher.password);
+
+        if (!isMatch) return Response.error(res, "Invalid Email or Password", 401);
+
+
+        const token = jwtService.generateAccessToken({
+            id: teacher.id,
+            role: teacher.role
+        });
+
+        const responseData = {
+            token,
+            userData: {
+                id: teacher.id,
+                name: teacher.name,
+                email: teacher.email,
+            }
+        };
+
+        return Response.success(res, responseData, "Login Successful", 200);
+
     }
     catch (error) {
         Response.error(res, message = error.message, errorCode = 405);
     }
-
 };
 
-async function TeacherLogin(req, res, next) {
+//Helper Functions
+function extractEmailPassword(reqBody) {
+    const { email, password } = reqBody;
 
-};
+    if (!email) {
+        throw new Error("Email is required");
+    }
 
+    if (!password) {
+        throw new Error("Password is required");
+    }
+
+    return { email, password };
+}
+
+function passwordCompare(password, hashedPassword) {
+    return bcrypt.compare(password, hashedPassword)
+}
 
 module.exports = {
     StudentLogin,

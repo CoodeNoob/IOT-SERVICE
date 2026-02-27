@@ -1,7 +1,5 @@
 const Teacher = require('../models/teacher.model');
 
-
-
 async function registerTeacher(name, email, password, role) {
     return Teacher.create(
         {
