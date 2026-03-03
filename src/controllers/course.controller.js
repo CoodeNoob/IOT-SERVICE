@@ -7,7 +7,7 @@ async function getAllCourse(req, res) {
     try {
         const courses = await courseService.getAllCourse();
 
-        Response.success(res, message = courses, 200);
+        Response.success(res, data = courses, message = "Courses Retrieve Successfully ! ", 200);
     }
     catch (error) {
         Response.error(res, message = error.message, errorCode = 403);
@@ -64,8 +64,6 @@ function generateCourseCode() {
     const random = Math.floor(100 + Math.random() * 900);
     return `CRS-${timestamp}${random}`;
 }
-
-
 
 
 module.exports = {
