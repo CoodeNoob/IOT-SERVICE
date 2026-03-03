@@ -14,7 +14,8 @@ const authRoutes = require('./src/routes/auth.route');
 const StudentRoutes = require('./src/routes/student.route');
 const courseRoutes = require('./src/routes/course.route');
 const teacherRoutes = require('./src/routes/teacher.route');
-const အစမ်း = require('./src/routes/အစမ်း.လမ်း')
+const အစမ်း = require('./src/routes/အစမ်း.လမ်း');
+const { register } = require('module');
 
 
 

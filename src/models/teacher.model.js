@@ -15,6 +15,11 @@ const Teacher = sequelize.define('Teacher', {
     password: {
         type: DataTypes.STRING(255),
         allowNull: false
+    },
+    role: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        defaultValue: 'teacher'
     }
 }, {
     tableName: "teachers",

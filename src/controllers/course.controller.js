@@ -17,7 +17,6 @@ async function getAllCourse(req, res) {
 async function addNewCourse(req, res) {
     // courseName | courseCode
     try {
-
         const { courseName } = req.body;
         const courseData = {
             courseName: courseName,
