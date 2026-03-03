@@ -33,6 +33,7 @@ async function registerTeacher(req, res) {
     }
 }
 
+
 module.exports = {
-    registerTeacher
+    registerTeacher,
 }

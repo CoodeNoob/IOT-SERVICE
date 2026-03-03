@@ -3,11 +3,19 @@ const path = require('path');
 const app = express();
 const cors = require('cors');
 
+// SWAGGER 
+const swaggerUi = require("swagger-ui-express");
+const swaggerSpec = require("./config/swagger");
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 //ROUTES
 const authRoutes = require('./src/routes/auth.route');
 const StudentRoutes = require('./src/routes/student.route');
 const courseRoutes = require('./src/routes/course.route');
 const teacherRoutes = require('./src/routes/teacher.route');
+const အစမ်း = require('./src/routes/အစမ်း.လမ်း')
+
 
 
 //CORS OPTIONS
@@ -65,5 +73,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/student', StudentRoutes);
 app.use('/api/course', courseRoutes);
 app.use('/api/teacher', teacherRoutes);
+app.use('/api/test', အစမ်း)
+
+
 
 module.exports = app;   

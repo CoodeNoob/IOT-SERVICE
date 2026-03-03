@@ -9,7 +9,6 @@ async function findCourseById(id) {
     return Course.findByPk(id, { raw: true });
 }
 
-
 async function enrollStudent(data) {
     return CourseEnroll.create(data)
 }
