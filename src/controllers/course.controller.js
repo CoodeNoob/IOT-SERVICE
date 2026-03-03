@@ -2,6 +2,18 @@ const courseService = require('../services/course.service');
 const Response = require('../utils/ApiResponses');
 const studentService = require('../services/student.service');
 
+
+async function getAllCourse(req, res) {
+    try {
+        const courses = await courseService.getAllCourse();
+
+        Response.success(res, message = courses, 200);
+    }
+    catch (error) {
+        Response.error(res, message = error.message, errorCode = 403);
+    }
+}
+
 async function addNewCourse(req, res) {
     // courseName | courseCode
     try {
@@ -59,5 +71,6 @@ function generateCourseCode() {
 module.exports = {
     addNewCourse,
     enrollCourse,
-    assignCourse
+    assignCourse,
+    getAllCourse
 }

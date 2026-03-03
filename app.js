@@ -76,5 +76,4 @@ app.use('/api/teacher', teacherRoutes);
 app.use('/api/test', အစမ်း)
 
 
-
 module.exports = app;   

@@ -1,6 +1,10 @@
 const Course = require('../models/course.model');
 const CourseEnroll = require('../models/studentcourse.model');
 
+async function getAllCourse() {
+    return Course.findAll();
+}
+
 async function addNewCourse(courseData) {
     return Course.create(courseData);
 }
@@ -16,5 +20,6 @@ async function enrollStudent(data) {
 module.exports = {
     addNewCourse,
     findCourseById,
-    enrollStudent
+    enrollStudent,
+    getAllCourse
 }
