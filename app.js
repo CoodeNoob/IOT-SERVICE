@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const cors = require('cors');
+const logger = require('./src/utils/logger');
+const { httpLogger, errorLogger, debugLogger } = require('./src/middleware/logger.middleware');
 
 // SWAGGER 
 const swaggerUi = require("swagger-ui-express");
@@ -14,8 +16,7 @@ const authRoutes = require('./src/routes/auth.route');
 const StudentRoutes = require('./src/routes/student.route');
 const courseRoutes = require('./src/routes/course.route');
 const teacherRoutes = require('./src/routes/teacher.route');
-const အစမ်း = require('./src/routes/အစမ်း.လမ်း');
-const { register } = require('module');
+
 
 
 
@@ -40,6 +41,8 @@ const corsOptions = {
 
 
 app.use(express.json());
+
+app.use(httpLogger);
 
 // Files    
 app.use(
@@ -74,7 +77,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/student', StudentRoutes);
 app.use('/api/course', courseRoutes);
 app.use('/api/teacher', teacherRoutes);
-app.use('/api/test', အစမ်း)
 
 
 module.exports = app;   
