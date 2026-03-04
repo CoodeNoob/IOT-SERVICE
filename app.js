@@ -18,8 +18,6 @@ const courseRoutes = require('./src/routes/course.route');
 const teacherRoutes = require('./src/routes/teacher.route');
 
 
-
-
 //CORS OPTIONS
 const allowOrigin = [
     'http://localhost:3000'
@@ -59,11 +57,14 @@ app.use(cors({
 app.use(express.static(path.join(__dirname, '..', 'public')));
 
 app.get('/', (req, res) => {
+
+    logger.info("Service started Successfully");
     res.json({
         status: 'Running',
         timestamp: new Date().toISOString(),
         service: 'FingerPrint Service'
     });
+
 });
 
 // REQUEST BODY JSON ENCODING
