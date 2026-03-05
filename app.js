@@ -4,6 +4,9 @@ const app = express();
 const cors = require('cors');
 const logger = require('./src/utils/logger');
 const { httpLogger, errorLogger, debugLogger } = require('./src/middleware/logger.middleware');
+require('dotenv').config();
+const { sequelize } = require('./src/models');
+
 
 // SWAGGER 
 const swaggerUi = require("swagger-ui-express");
@@ -39,6 +42,8 @@ const corsOptions = {
 
 
 app.use(express.json());
+
+if (process.env.APP === 'Development') app.use(debugLogger);
 
 app.use(httpLogger);
 
@@ -79,5 +84,19 @@ app.use('/api/student', StudentRoutes);
 app.use('/api/course', courseRoutes);
 app.use('/api/teacher', teacherRoutes);
 
+
+process.on("SIGINT", async () => {
+    try {
+        console.log("Server shutting down...");
+        await sequelize.close();
+        console.log("Server shutdown successfully ...");
+        process.exit(0);
+
+    }
+    catch (error) {
+        console.error('Error closing database connection:', error);
+    }
+
+});
 
 module.exports = app;   

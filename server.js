@@ -1,23 +1,32 @@
 require('dotenv').config();
 
 const app = require('./app');
-
 const { sequelize } = require('./src/models');
 
 const PORT = process.env.PORT || 5000;
+const isDevState = process.env.APP === 'Development';
 
-sequelize.authenticate()
-    .then(() => {
-        console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        console.log(`Database : ${process.env.DB_NAME} : connected successfully`);
-        console.log("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-        return sequelize.sync();
-    })
-    .then(() => {
+async function startServer() {
+    try {
+        console.clear();
+        await sequelize.authenticate();
+
+        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+        console.log(`Database : ${process.env.DB_NAME} connected successfully`);
+        console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+
+        if (isDevState) {
+            await sequelize.sync();
+            console.log("Database synced");
+        }
+
         app.listen(PORT, () => {
-            console.log(`Server is running on http://localhost:${PORT}`);
+            console.log(`Server running on http://localhost:${PORT}`);
         });
-    })
-    .catch(err => {
-        console.error('Error:', err);
-    });
+
+    } catch (err) {
+        console.error("Error starting server:", err);
+    }
+}
+
+startServer();
