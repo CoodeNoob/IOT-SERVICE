@@ -12,7 +12,7 @@ coureseRouter.get('/', (req, res) => {
 
 // STRICT | NEED TO BE ADMIN
 coureseRouter.get('/list', authValidate, courseController.getAllCourse)
-coureseRouter.post('/new', authValidate, authorizeRole('admin'), courseController.addNewCourse);
+coureseRouter.post('/new', courseController.addNewCourse);
 coureseRouter.post('/enroll', authValidate, authorizeRole('admin'), courseController.enrollCourse);
 
 module.exports = coureseRouter;

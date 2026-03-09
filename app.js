@@ -19,6 +19,8 @@ const authRoutes = require('./src/routes/auth.route');
 const StudentRoutes = require('./src/routes/student.route');
 const courseRoutes = require('./src/routes/course.route');
 const teacherRoutes = require('./src/routes/teacher.route');
+const fingerprintRoutes = require('./src/routes/fingerprint.route');
+const attendanceRoutes = require('./src/routes/attendance.route');
 
 
 //CORS OPTIONS
@@ -83,6 +85,9 @@ app.use('/api/auth', authRoutes);
 app.use('/api/student', StudentRoutes);
 app.use('/api/course', courseRoutes);
 app.use('/api/teacher', teacherRoutes);
+app.use('/api/fingerprint', fingerprintRoutes);
+app.use('/api/attendance', attendanceRoutes);
+app.use('/fingerprint', attendanceRoutes);
 
 
 process.on("SIGINT", async () => {
