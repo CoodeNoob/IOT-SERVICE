@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { FingerPrint, Student, StudentCourse, Attendance } = require('../models');
+const { FingerPrint, Student, StudentCourse, Attendance, Course } = require('../models');
 
 async function findActiveFingerprintById(fingerprintId) {
     return FingerPrint.findOne({
@@ -20,6 +20,30 @@ async function findActiveFingerprintById(fingerprintId) {
     });
 }
 
+async function registerFingerprint({ studentId, fingerSlot, isActive = true }) {
+    const student = await Student.findByPk(studentId);
+    if (!student) {
+        throw new Error('Student not found');
+    }
+
+    const existingSlot = await FingerPrint.findOne({
+        where: {
+            finger_slot: fingerSlot,
+            is_active: true
+        }
+    });
+
+    if (existingSlot) {
+        throw new Error('Finger slot is already assigned');
+    }
+
+    return FingerPrint.create({
+        student_id: studentId,
+        finger_slot: fingerSlot,
+        is_active: isActive
+    });
+}
+
 async function resolveCourseIdForStudent(studentId, rawCourseId) {
     const courseId = Number(rawCourseId);
     if (Number.isInteger(courseId) && courseId > 0) {
@@ -31,7 +55,16 @@ async function resolveCourseIdForStudent(studentId, rawCourseId) {
         order: [['enrolled_at', 'DESC']]
     });
 
-    return latestEnrollment?.course_id ?? null;
+    if (latestEnrollment?.course_id) {
+        return latestEnrollment.course_id;
+    }
+
+    const defaultCourse = await Course.findOne({
+        attributes: ['id'],
+        order: [['id', 'ASC']]
+    });
+
+    return defaultCourse?.id ?? null;
 }
 
 async function recordAttendance({ studentId, courseId, checkDate, checkTime }) {
@@ -52,6 +85,8 @@ async function recordAttendance({ studentId, courseId, checkDate, checkTime }) {
 
 module.exports = {
     findActiveFingerprintById,
+    registerFingerprint,
     resolveCourseIdForStudent,
     recordAttendance
 };
+

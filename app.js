@@ -1,4 +1,4 @@
-const express = require('express');
+﻿const express = require('express');
 const path = require('path');
 const app = express();
 const cors = require('cors');
@@ -86,8 +86,9 @@ app.use('/api/student', StudentRoutes);
 app.use('/api/course', courseRoutes);
 app.use('/api/teacher', teacherRoutes);
 app.use('/api/fingerprint', fingerprintRoutes);
+app.use('/api/fingerprints', fingerprintRoutes);
 app.use('/api/attendance', attendanceRoutes);
-app.use('/fingerprint', attendanceRoutes);
+app.use('/fingerprint', fingerprintRoutes);
 
 
 process.on("SIGINT", async () => {

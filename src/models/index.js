@@ -5,6 +5,7 @@ const Student = require('./student.model');
 const Teacher = require('./teacher.model');
 const Course = require('./course.model');
 const FingerPrint = require('./fingerprint.model');
+const FingerprintEnrollment = require('./fingerprintEnrollment.model');
 const Attendance = require('./attendance.model');
 const StudentCourse = require('./studentcourse.model');
 
@@ -17,6 +18,17 @@ Student.hasMany(FingerPrint, {
 
 
 FingerPrint.belongsTo(Student, {
+    foreignKey: 'student_id',
+    as: 'student'
+});
+
+// STUDENT - FINGERPRINT ENROLLMENT
+Student.hasMany(FingerprintEnrollment, {
+    foreignKey: 'student_id',
+    as: 'fingerprint_enrollments'
+});
+
+FingerprintEnrollment.belongsTo(Student, {
     foreignKey: 'student_id',
     as: 'student'
 });
@@ -80,6 +92,7 @@ module.exports = {
     Teacher,
     Course,
     FingerPrint,
+    FingerprintEnrollment,
     Attendance,
     StudentCourse
 };
