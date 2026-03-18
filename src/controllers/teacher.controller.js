@@ -2,6 +2,8 @@ const Response = require('../utils/ApiResponses');
 const TeacherService = require('../services/teacher.service');
 const bcrypt = require('bcrypt');
 const e = require('express');
+const { Teacher } = require('../models');
+const { buildSimplePdfFromLines } = require('../utils/simplePdf');
 
 
 async function registerTeacher(req, res) {
@@ -33,7 +35,40 @@ async function registerTeacher(req, res) {
     }
 }
 
+async function exportTeachersPdf(req, res) {
+    try {
+        const teachers = await Teacher.findAll({
+            attributes: ['id', 'name', 'email', 'created_at'],
+            order: [['id', 'ASC']],
+            raw: true
+        });
+
+        const now = new Date();
+        const headerDate = now.toISOString().replace('T', ' ').slice(0, 19) + 'Z';
+
+        const lines = [
+            `Teachers Export (${headerDate})`,
+            '',
+            'ID | Name | Email | Created At',
+            '----------------------------------------'
+        ];
+
+        for (const t of teachers) {
+            lines.push(`${t.id} | ${t.name} | ${t.email} | ${t.created_at}`);
+        }
+
+        const pdfBuffer = buildSimplePdfFromLines(lines);
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=\"teachers.pdf\"');
+        return res.status(200).send(pdfBuffer);
+    } catch (error) {
+        return Response.error(res, error.message, 500);
+    }
+}
+
 
 module.exports = {
     registerTeacher,
+    exportTeachersPdf,
 }

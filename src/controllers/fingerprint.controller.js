@@ -50,6 +50,11 @@ function isLegacyDeviceRequest(req) {
     return formEncoded || hasLegacyKeys;
 }
 
+function legacyWantsLoginPrefix(req) {
+    // Older tutorial firmware checks payload starts with "login".
+    return req.body?.FingerID !== undefined;
+}
+
 async function scanFingerprint(req, res) {
     try {
         const rawFingerprintId = normalizeFingerprintId(req.body);
@@ -173,7 +178,12 @@ async function receiveFingerprintData(req, res) {
         });
 
         if (legacyResponse) {
-            return res.status(200).send(`login${fingerprint.student.name}`);
+            const studentName = fingerprint.student.name ?? '';
+            if (legacyWantsLoginPrefix(req)) {
+                return res.status(200).send(`login${studentName}`);
+            }
+            // Newer/simple firmware can just display the response directly on OLED.
+            return res.status(200).send(studentName);
         }
 
         return Response.success(
@@ -336,4 +346,3 @@ module.exports = {
     getPendingFingerprintEnrollment,
     cancelFingerprintEnrollment
 };
-
