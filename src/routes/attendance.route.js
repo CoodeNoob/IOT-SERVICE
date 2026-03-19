@@ -44,4 +44,19 @@ attendanceRouter.post(
   attendanceController.markAttendanceByFingerprint,
 );
 
+// Records for dashboards
+attendanceRouter.get('/records', authValidate, authorizeRole('teacher', 'admin'), attendanceController.listAttendanceRecords);
+attendanceRouter.get(
+  '/teacher/records',
+  authValidate,
+  authorizeRole('teacher', 'admin'),
+  attendanceController.listAttendanceRecords,
+);
+attendanceRouter.get(
+  '/student/history',
+  authValidate,
+  authorizeRole('student', 'admin'),
+  attendanceController.listStudentAttendanceHistory,
+);
+
 module.exports = attendanceRouter;

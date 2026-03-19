@@ -24,7 +24,7 @@ const attendanceRoutes = require('./src/routes/attendance.route');
 
 
 //CORS OPTIONS
-const allowOrigin = [
+const allowedOrigins = [
     'http://localhost:3000'
 ];
 

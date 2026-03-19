@@ -277,4 +277,96 @@ module.exports = {
   exportAttendance,
   getFingerprintRoster,
   markAttendanceByFingerprint,
+  listAttendanceRecords,
+  listStudentAttendanceHistory,
 };
+
+async function listAttendanceRecords(req, res) {
+  try {
+    const source = req.method === 'POST' ? req.body : req.query;
+    const courseSelector = normalizeCourseSelector(source);
+    const rawDate = normalizeDate(source);
+
+    const courseId = await resolveCourseId(courseSelector);
+
+    const where = {};
+    if (courseId) {
+      where.course_id = courseId;
+    }
+
+    if (rawDate) {
+      const dateStr = String(rawDate);
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        return Response.error(res, 'date must be YYYY-MM-DD', 400);
+      }
+      where.check_date = dateStr;
+    }
+
+    const rows = await Attendance.findAll({
+      where,
+      include: [
+        { model: Student, as: 'student', attributes: ['id', 'name', 'email'] },
+        { model: Course, as: 'course', attributes: ['id', 'courseName', 'courseCode'] },
+      ],
+      order: [
+        ['check_date', 'DESC'],
+        ['check_time', 'DESC'],
+        ['id', 'DESC'],
+      ],
+    });
+
+    const records = rows.map((r) => ({
+      id: r.id,
+      student_id: r.student_id,
+      student_name: r.student?.name ?? '',
+      roll_number: String(r.student?.id ?? r.student_id ?? ''),
+      course_id: r.course_id,
+      subject: r.course?.courseName ?? '',
+      course_name: r.course?.courseName ?? '',
+      course_code: r.course?.courseCode ?? '',
+      check_date: r.check_date,
+      check_time: r.check_time,
+      status: r.status,
+      created_at: r.created_at,
+    }));
+
+    return Response.success(res, records, 'Attendance records loaded', 200);
+  } catch (error) {
+    return Response.error(res, error.message, 500);
+  }
+}
+
+async function listStudentAttendanceHistory(req, res) {
+  try {
+    const studentId = Number(req?.user?.id);
+    if (!Number.isInteger(studentId) || studentId <= 0) {
+      return Response.error(res, 'Invalid student id', 400);
+    }
+
+    const rows = await Attendance.findAll({
+      where: { student_id: studentId },
+      include: [{ model: Course, as: 'course', attributes: ['id', 'courseName', 'courseCode'] }],
+      order: [
+        ['check_date', 'DESC'],
+        ['check_time', 'DESC'],
+        ['id', 'DESC'],
+      ],
+    });
+
+    const records = rows.map((r) => ({
+      id: r.id,
+      student_id: r.student_id,
+      subject: r.course?.courseName ?? '',
+      course_name: r.course?.courseName ?? '',
+      course_code: r.course?.courseCode ?? '',
+      check_date: r.check_date,
+      check_time: r.check_time,
+      status: r.status,
+      created_at: r.created_at,
+    }));
+
+    return Response.success(res, records, 'Attendance history loaded', 200);
+  } catch (error) {
+    return Response.error(res, error.message, 500);
+  }
+}
