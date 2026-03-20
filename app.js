@@ -21,6 +21,7 @@ const courseRoutes = require('./src/routes/course.route');
 const teacherRoutes = require('./src/routes/teacher.route');
 const fingerprintRoutes = require('./src/routes/fingerprint.route');
 const attendanceRoutes = require('./src/routes/attendance.route');
+const mailRoutes = require('./src/routes/email.route');
 
 
 //CORS OPTIONS
@@ -89,6 +90,7 @@ app.use('/api/fingerprint', fingerprintRoutes);
 app.use('/api/fingerprints', fingerprintRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/fingerprint', fingerprintRoutes);
+app.use('/api/mail', mailRoutes)
 
 
 process.on("SIGINT", async () => {
@@ -102,7 +104,6 @@ process.on("SIGINT", async () => {
     catch (error) {
         console.error('Error closing database connection:', error);
     }
-
 });
 
 module.exports = app;   
