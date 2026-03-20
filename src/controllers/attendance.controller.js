@@ -1,6 +1,6 @@
 ﻿const Response = require('../utils/ApiResponses');
 const { Op } = require('sequelize');
-const { Attendance, Student, Course, FingerPrint, AbsenceStatus } = require('../models');
+const { Attendance, Student, Course, FingerPrint, AbsenceStatus, StudentCourse } = require('../models');
 const fingerprintService = require('../services/fingerprint.service');
 const { buildSimplePdfFromLines } = require('../utils/simplePdf');
 
@@ -311,6 +311,8 @@ module.exports = {
   markAttendanceByFingerprint,
   getTeacherAbsenteesByDate,
   setAbsenceStatus,
+  getStudentAbsenteeismByDate,
+  getStudentAbsenteeismByMonth,
   listAttendanceRecords,
   listStudentAttendanceHistory,
 };
@@ -474,6 +476,240 @@ async function getTeacherAbsenteesByDate(req, res) {
     }
 
     return Response.success(res, absentees, 'Absentees loaded', 200);
+  } catch (error) {
+    return Response.error(res, error.message, 500);
+  }
+}
+
+async function getStudentAbsenteeismByDate(req, res) {
+  try {
+    const studentId = Number(req?.user?.id);
+    if (!Number.isInteger(studentId) || studentId <= 0) {
+      return Response.error(res, 'Invalid student id', 400);
+    }
+
+    const source = req.method === 'POST' ? req.body : req.query;
+    const rawDate = normalizeDate(source);
+    const dateStr = rawDate ? String(rawDate) : '';
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+      return Response.error(res, 'date must be YYYY-MM-DD', 400);
+    }
+
+    const enrollments = await StudentCourse.findAll({
+      where: { student_id: studentId },
+      attributes: ['course_id'],
+    });
+
+    let courseIds = enrollments
+      .map((row) => Number(row.course_id))
+      .filter((id) => Number.isInteger(id) && id > 0);
+
+    if (courseIds.length === 0) {
+      const distinctCourses = await Attendance.findAll({
+        where: { student_id: studentId },
+        attributes: ['course_id'],
+        group: ['course_id'],
+      });
+      courseIds = distinctCourses
+        .map((row) => Number(row.course_id))
+        .filter((id) => Number.isInteger(id) && id > 0);
+    }
+
+    if (courseIds.length === 0) {
+      const subjectsRaw = source?.subjects ?? source?.subject ?? source?.courseName ?? source?.course_name;
+      const subjectNames = Array.isArray(subjectsRaw)
+        ? subjectsRaw.map((v) => String(v).trim()).filter(Boolean)
+        : typeof subjectsRaw === 'string'
+          ? [subjectsRaw.trim()].filter(Boolean)
+          : [];
+
+      if (subjectNames.length > 0) {
+        const rows = await Course.findAll({
+          where: { courseName: { [Op.in]: subjectNames } },
+          attributes: ['id'],
+        });
+        courseIds = rows
+          .map((row) => Number(row.id))
+          .filter((id) => Number.isInteger(id) && id > 0);
+      }
+    }
+
+    if (courseIds.length === 0) {
+      return Response.success(res, [], 'No courses found', 200);
+    }
+
+    const [courses, attendanceRows, overrides] = await Promise.all([
+      Course.findAll({ where: { id: { [Op.in]: courseIds } }, attributes: ['id', 'courseName'] }),
+      Attendance.findAll({
+        where: { student_id: studentId, course_id: { [Op.in]: courseIds }, check_date: dateStr },
+        attributes: ['course_id', 'status'],
+      }),
+      AbsenceStatus.findAll({
+        where: { student_id: studentId, course_id: { [Op.in]: courseIds }, check_date: dateStr },
+        attributes: ['course_id', 'status'],
+      }),
+    ]);
+
+    const courseNameById = new Map(courses.map((c) => [String(c.id), c.courseName]));
+    const presentLikeCourses = new Set();
+    for (const row of attendanceRows) {
+      if (isPresentLikeStatus(row.status)) {
+        presentLikeCourses.add(String(row.course_id));
+      }
+    }
+
+    const overrideByCourse = new Map(overrides.map((o) => [String(o.course_id), String(o.status)]));
+
+    const results = courseIds
+      .map((courseId) => {
+        const key = String(courseId);
+        if (presentLikeCourses.has(key)) return null;
+        const override = overrideByCourse.get(key);
+        return {
+          subject: courseNameById.get(key) ?? '',
+          date: dateStr,
+          status: override === 'leave' ? 'leave' : 'absent',
+        };
+      })
+      .filter(Boolean);
+
+    return Response.success(res, results, 'Absenteeism loaded', 200);
+  } catch (error) {
+    return Response.error(res, error.message, 500);
+  }
+}
+
+async function getStudentAbsenteeismByMonth(req, res) {
+  try {
+    const studentId = Number(req?.user?.id);
+    if (!Number.isInteger(studentId) || studentId <= 0) {
+      return Response.error(res, 'Invalid student id', 400);
+    }
+
+    const source = req.method === 'POST' ? req.body : req.query;
+    const monthRaw = source?.month ?? source?.monthKey ?? source?.month_key ?? source?.yearMonth ?? source?.year_month;
+    const monthStr = monthRaw ? String(monthRaw).trim() : '';
+
+    if (!/^\d{4}-\d{2}$/.test(monthStr)) {
+      return Response.error(res, 'month must be YYYY-MM', 400);
+    }
+
+    const year = Number(monthStr.slice(0, 4));
+    const monthIndex = Number(monthStr.slice(5, 7)) - 1;
+    const start = new Date(year, monthIndex, 1);
+    const end = new Date(year, monthIndex + 1, 1);
+    const startStr = `${monthStr}-01`;
+
+    const enrollments = await StudentCourse.findAll({
+      where: { student_id: studentId },
+      attributes: ['course_id'],
+    });
+
+    let courseIds = enrollments
+      .map((row) => Number(row.course_id))
+      .filter((id) => Number.isInteger(id) && id > 0);
+
+    if (courseIds.length === 0) {
+      const distinctCourses = await Attendance.findAll({
+        where: { student_id: studentId },
+        attributes: ['course_id'],
+        group: ['course_id'],
+      });
+      courseIds = distinctCourses
+        .map((row) => Number(row.course_id))
+        .filter((id) => Number.isInteger(id) && id > 0);
+    }
+
+    if (courseIds.length === 0) {
+      const subjectsRaw = source?.subjects ?? source?.subject ?? source?.courseName ?? source?.course_name;
+      const subjectNames = Array.isArray(subjectsRaw)
+        ? subjectsRaw.map((v) => String(v).trim()).filter(Boolean)
+        : typeof subjectsRaw === 'string'
+          ? [subjectsRaw.trim()].filter(Boolean)
+          : [];
+
+      if (subjectNames.length > 0) {
+        const rows = await Course.findAll({
+          where: { courseName: { [Op.in]: subjectNames } },
+          attributes: ['id'],
+        });
+        courseIds = rows
+          .map((row) => Number(row.id))
+          .filter((id) => Number.isInteger(id) && id > 0);
+      }
+    }
+
+    if (courseIds.length === 0) {
+      return Response.success(res, [], 'No courses found', 200);
+    }
+
+    const [courses, studentAttendanceRows, overrides, classDateRows] = await Promise.all([
+      Course.findAll({ where: { id: { [Op.in]: courseIds } }, attributes: ['id', 'courseName'] }),
+      Attendance.findAll({
+        where: {
+          student_id: studentId,
+          course_id: { [Op.in]: courseIds },
+          check_date: { [Op.gte]: startStr, [Op.lt]: toLocalDate(end) },
+        },
+        attributes: ['course_id', 'check_date', 'status'],
+      }),
+      AbsenceStatus.findAll({
+        where: {
+          student_id: studentId,
+          course_id: { [Op.in]: courseIds },
+          check_date: { [Op.gte]: startStr, [Op.lt]: toLocalDate(end) },
+        },
+        attributes: ['course_id', 'check_date', 'status'],
+      }),
+      Attendance.findAll({
+        where: {
+          course_id: { [Op.in]: courseIds },
+          check_date: { [Op.gte]: startStr, [Op.lt]: toLocalDate(end) },
+        },
+        attributes: ['course_id', 'check_date'],
+        group: ['course_id', 'check_date'],
+      }),
+    ]);
+
+    const courseNameById = new Map(courses.map((c) => [String(c.id), c.courseName]));
+
+    const presentLikeByCourseDate = new Set();
+    for (const row of studentAttendanceRows) {
+      if (isPresentLikeStatus(row.status)) {
+        presentLikeByCourseDate.add(`${row.course_id}|${row.check_date}`);
+      }
+    }
+
+    const overrideByCourseDate = new Map();
+    for (const o of overrides) {
+      overrideByCourseDate.set(`${o.course_id}|${o.check_date}`, String(o.status));
+    }
+
+    const classDatesByCourse = new Map();
+    for (const row of classDateRows) {
+      const key = String(row.course_id);
+      const dates = classDatesByCourse.get(key) ?? new Set();
+      dates.add(String(row.check_date));
+      classDatesByCourse.set(key, dates);
+    }
+
+    const results = [];
+    for (const courseId of courseIds) {
+      const courseKey = String(courseId);
+      const dates = Array.from(classDatesByCourse.get(courseKey) ?? []).sort();
+      for (const check_date of dates) {
+        const cdKey = `${courseKey}|${check_date}`;
+        if (presentLikeByCourseDate.has(cdKey)) continue;
+        const override = overrideByCourseDate.get(cdKey);
+        results.push({
+          subject: courseNameById.get(courseKey) ?? '',
+          date: check_date,
+          status: override === 'leave' ? 'leave' : 'absent',
+        });
+      }
+    }
+
+    return Response.success(res, results, 'Monthly absenteeism loaded', 200);
   } catch (error) {
     return Response.error(res, error.message, 500);
   }

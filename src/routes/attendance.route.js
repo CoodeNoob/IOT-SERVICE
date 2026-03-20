@@ -59,6 +59,31 @@ attendanceRouter.get(
   attendanceController.listStudentAttendanceHistory,
 );
 
+attendanceRouter.post(
+  '/student/absenteeism',
+  authValidate,
+  authorizeRole('student', 'admin'),
+  attendanceController.getStudentAbsenteeismByDate,
+);
+attendanceRouter.get(
+  '/student/absenteeism',
+  authValidate,
+  authorizeRole('student', 'admin'),
+  attendanceController.getStudentAbsenteeismByDate,
+);
+attendanceRouter.post(
+  '/student/absenteeism/month',
+  authValidate,
+  authorizeRole('student', 'admin'),
+  attendanceController.getStudentAbsenteeismByMonth,
+);
+attendanceRouter.get(
+  '/student/absenteeism/month',
+  authValidate,
+  authorizeRole('student', 'admin'),
+  attendanceController.getStudentAbsenteeismByMonth,
+);
+
 // Teacher can set leave/absent override for a date.
 attendanceRouter.post(
   '/absence-status',
