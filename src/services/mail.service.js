@@ -34,7 +34,6 @@ function absentHtmlBuilder(name, email, reason) {
     // reason = "ABSENT" or "LATE"
 
     return `
-                < !DOCTYPE html>
             <html>
                 <head>
                     <meta charset="UTF-8">
@@ -83,7 +82,7 @@ function absentHtmlBuilder(name, email, reason) {
 
                                             <p style="font-size:15px; margin-top:30px;">
                                                 Regards,<br />
-                                                <strong>Your Company / School</strong>
+                                                <strong>Shinjiro / GUSTO</strong>
                                             </p>
 
                                         </td>
