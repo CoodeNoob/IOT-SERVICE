@@ -15,6 +15,14 @@ async function FindByEmail(email) {
     })
 }
 
+async function getName_Mail(id) {
+    return Student.findByPk(id, {
+        attributes: ['name', 'email'],
+        raw: true
+    });
+}
+
+
 async function FindStudentById(id) {
     return await Student.findByPk(id, { raw: true });
 }
@@ -22,5 +30,6 @@ async function FindStudentById(id) {
 module.exports = {
     RegisterStudent,
     FindByEmail,
-    FindStudentById
+    FindStudentById,
+    getName_Mail
 }
