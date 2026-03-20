@@ -8,6 +8,7 @@ const FingerPrint = require('./fingerprint.model');
 const FingerprintEnrollment = require('./fingerprintEnrollment.model');
 const Attendance = require('./attendance.model');
 const StudentCourse = require('./studentcourse.model');
+const AbsenceStatus = require('./absenceStatus.model');
 
 
 // STUDENT - FINGER PRINT ( 1 - M)
@@ -84,6 +85,27 @@ Course.belongsToMany(Student, {
     as: 'students'
 });
 
+// Absence status overrides (leave)
+Student.hasMany(AbsenceStatus, {
+    foreignKey: 'student_id',
+    as: 'absence_statuses'
+});
+
+AbsenceStatus.belongsTo(Student, {
+    foreignKey: 'student_id',
+    as: 'student'
+});
+
+Course.hasMany(AbsenceStatus, {
+    foreignKey: 'course_id',
+    as: 'absence_statuses'
+});
+
+AbsenceStatus.belongsTo(Course, {
+    foreignKey: 'course_id',
+    as: 'course'
+});
+
 
 
 module.exports = {
@@ -94,5 +116,6 @@ module.exports = {
     FingerPrint,
     FingerprintEnrollment,
     Attendance,
-    StudentCourse
+    StudentCourse,
+    AbsenceStatus
 };
